@@ -87,7 +87,7 @@ def check_for_hidden_split(cur_col):
         if len(test_substring2) > 5:
             next_space1 = cur_col.find(' ', 42)
             next_space2 = cur_col.find(' ', 92)
-            return(True, (cur_col[:next_space1], cur_col[next_space1+1:next_space2], cur_col[next_space2+1:]))
+            return(True, list((cur_col[:next_space1], cur_col[next_space1+1:next_space2], cur_col[next_space2+1:])))
     # Check for combined first and second or second and third columns
     else:
         # print('Current split is longer than 42')
@@ -104,7 +104,7 @@ def check_for_hidden_split(cur_col):
             # print('Splitting columns')
             # If the substring is larger then 5 characters then split the line
             # at the next space after the 42 character.
-            return (True, cur_col[:next_space], cur_col[next_space+1:])
+            return (True, list((cur_col[:next_space], cur_col[next_space+1:])))
 
 def parsePDFText(pdf_path, start_page, end_page):
     '''
