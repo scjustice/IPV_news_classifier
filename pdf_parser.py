@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 import pdftotext
-import numpy as np
+# import numpy as np
 import pandas as pd
 import re
-import sys
 
 pdf_path = "./census-domestic-violence-gun-homicides-arizona.pdf"
 output_csv = './census-domestic-violence-arizona.csv'
@@ -13,6 +12,7 @@ output_csv = './census-domestic-violence-arizona.csv'
 # Add capability to adjust hard codes like make characters between columns
 
 bDEBUG = False
+
 
 def test_format(x, count, page):
     '''
@@ -25,12 +25,13 @@ def test_format(x, count, page):
     else:
         return '{}'.format(x)
 
+
 def handle_special_lines(col_list, line_length):
-    ''' 
+    '''
     Because of the way that the pdf is formatted with the data split between
     three columns, there are many instances where the text for the columns do
-    not line up. This helper function returns a list of three elements with 
-    strings for each column or empty strings when there was no string for 
+    not line up. This helper function returns a list of three elements with
+    strings for each column or empty strings when there was no string for
     that column. This also handles hidden columns where there is only a single
     space between the end of a column and the start of the next column.
     '''
@@ -44,12 +45,11 @@ def handle_special_lines(col_list, line_length):
     for cur_index, cur_col in enumerate(col_list):
         # print(cur_index)
         # print(cur_col)
-        # If the currrent column has more than 42 characters then check for a 
+        # If the currrent column has more than 42 characters then check for a
         # hidden column.
         hidden_test = False
         if len(cur_col) > 42:
             hidden_test, new_cols = check_for_hidden_split(cur_col)
-            #hidden_test, *new_cols = check_for_hidden_split(cur_col)
         if hidden_test:
             if cur_index == 0:
                 new_list = new_cols
@@ -57,7 +57,7 @@ def handle_special_lines(col_list, line_length):
                     new_list.append(col_list[1])
                     # print(new_list)
                 elif len(new_cols) == 3:
-                    # Handle when first, second, and third columns were combined
+                    # Handle when first,second, and third columns were combined
                     new_list = new_cols
                 else:
                     new_list.append('')
@@ -66,15 +66,15 @@ def handle_special_lines(col_list, line_length):
             return new_list
     # Handle column one only
     if len(col_list) == 1:
-        return col_list + ['','']
+        return col_list + ['', '']
     # Handle column two only
     elif len(col_list) == 2:
         if line_length < 96:
             return col_list + ['']
         else:
             return [col_list[0], '', col_list[1]]
-    
-    
+
+
 def check_for_hidden_split(cur_col):
     '''
     Check for combined first, second, and third columns using heuristics
@@ -82,23 +82,25 @@ def check_for_hidden_split(cur_col):
     '''
     # First check for potentially combined first, second, and third columns.
     if len(cur_col) > 92:
-        test_substring1 = cur_col[42:92]
-        test_substring2 = cur_col[92:]
-        if len(test_substring2) > 5:
+        # test_substring1 = cur_col[42:92]
+        test_substring = cur_col[92:]
+        if len(test_substring) > 5:
             next_space1 = cur_col.find(' ', 42)
             next_space2 = cur_col.find(' ', 92)
-            return(True, list((cur_col[:next_space1], cur_col[next_space1+1:next_space2], cur_col[next_space2+1:])))
+            return(True, list((cur_col[:next_space1],
+                               cur_col[next_space1+1:next_space2],
+                               cur_col[next_space2+1:])))
     # Check for combined first and second or second and third columns
     else:
         # print('Current split is longer than 42')
         # Find the next space in the string after the 42nd character
-        next_space = cur_col.find(' ',42)
+        next_space = cur_col.find(' ', 42)
         # print('next_space = {}'.format(next_space))
         test_substring = cur_col[42:]
         # If the length of the substring to see if there is a hidden column.
         if len(test_substring) < 5:
-            # If the substring is less than 5 characters then there isn't a hidden
-            # column
+            # If the substring is less than 5 characters then
+            # there isn't a hidden column
             return (False, cur_col)
         else:
             # print('Splitting columns')
@@ -106,10 +108,11 @@ def check_for_hidden_split(cur_col):
             # at the next space after the 42 character.
             return (True, list((cur_col[:next_space], cur_col[next_space+1:])))
 
+
 def parsePDFText(pdf_path, start_page, end_page):
     '''
-    Main function to read in the contents of the pdf between the start 
-    and the end page 
+    Main function to read in the contents of the pdf between the start
+    and the end page
     '''
     # print('In parsePDFText')
     total_parse = ''
@@ -125,7 +128,7 @@ def parsePDFText(pdf_path, start_page, end_page):
         # print('Parsing page {}'.format(inst))
         count = 0
         for cur_line in pdf[inst].splitlines():
-            # some lines begin with a space so remove the single space 
+            # some lines begin with a space so remove the single space
             if cur_line[0] == ' ':
                 cur_line = cur_line[1:]
             # skip lines that contain the page numbers
@@ -145,7 +148,7 @@ def parsePDFText(pdf_path, start_page, end_page):
             # Test if the columns are split correctly, and handle appropriately
             cur_cols = handle_special_lines(test_cols, len(cur_line))
             # print(cur_split)
-            
+
             # Append each column to the correct column
             col1.append(cur_cols[0])
             col2.append(cur_cols[1])
@@ -173,7 +176,8 @@ def parsePDFText(pdf_path, start_page, end_page):
 def split_paragraphs(text):
     # Split the text in to individual paragraphs.
     # Paragraphs begin with a string like PHOENIX, DECEMBER 11, 2013
-    paragraph_string = re.sub(r'([A-Z ]+,? (?:AZ, |- )?[A-Z]+,? \d+, \d+ )', r'\n\1', text)
+    paragraph_string = re.sub(r'([A-Z ]+,? (?:AZ, |- )?[A-Z]+,? \d+, \d+ )',
+                              r'\n\1', text)
     paragraph_list = paragraph_string.splitlines()
     return paragraph_list
 
@@ -187,17 +191,19 @@ def parse_paragraph(cur_para):
     # print(cur_para)
     if (bDEBUG):
         return {}
-    # Check if the paragraph contains the location 
-    # If not then just add the paragraph to the return dictionary 
+    # Check if the paragraph contains the location
+    # If not then just add the paragraph to the return dictionary
     # as text and return
-    match = re.search(r'^([A-Z ]+),? (?:AZ, |- )?([A-Z]+,? \d+, \d+) ?', cur_para)
+    match = re.search(r'^([A-Z ]+),? (?:AZ, |- )?([A-Z]+,? \d+, \d+) ?',
+                      cur_para)
     ret_dict = {}
     if match is None:
         ret_dict['Text'] = [cur_para]
         return ret_dict
     Location = match.group(1).strip()
     Date = match.group(2).strip()
-    case_text = re.sub(r'^([A-Z ]+,? (?:AZ, |- )?[A-Z]+,? \d+, \d+ )', '', cur_para)
+    case_text = re.sub(r'^([A-Z ]+,? (?:AZ, |- )?[A-Z]+,? \d+, \d+ )', '',
+                       cur_para)
     # case_text = re.sub(r'([A-Z ]+ ?[,-] [A-Z]+ \d+, \d+ )', '', cur_para)
     test_for_shooter_info = case_text.find('Shooter Suicide:')
     ret_dict = {'Location': [Location], 'Date': [Date], 'Text': [case_text]}
@@ -207,7 +213,7 @@ def parse_paragraph(cur_para):
         shooter_info = case_text[test_for_shooter_info:]
         case_text = case_text[:test_for_shooter_info]
         ret_dict['Text'] = [case_text.rstrip()]
-        
+
         # Handle that the shooter categories have multiple entries at times
         shooter_columns = ['Shooter Suicide',
                            'Shooter DV History|Shooter Domestic ' +
