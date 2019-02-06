@@ -4,8 +4,8 @@ import pdftotext
 import pandas as pd
 import re
 
-pdf_path = "./census-domestic-violence-gun-homicides-arizona.pdf"
-output_csv = './census-domestic-violence-arizona.csv'
+pdf_path = "./data/census-domestic-violence-gun-homicides-arizona.pdf"
+output_csv = './data/census-domestic-violence-arizona.csv'
 
 # To Do:
 # Add runline parameters to set input pdf and output csv
